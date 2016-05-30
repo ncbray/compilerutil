@@ -1,10 +1,9 @@
-package writer
+package fs
 
 import (
 	"bytes"
 	"crypto/sha1"
 	"io"
-	"io/ioutil"
 	"os"
 )
 
@@ -60,27 +59,30 @@ type fileOutput struct {
 	Perm os.FileMode
 }
 
-type SafeFileOutput struct {
-	files   []fileOutput
-	tempDir string
+type bufferedFileSystem struct {
+	files []fileOutput
+	temp  *TempDir
 }
 
-func (o *SafeFileOutput) OutputFile(path string, perm os.FileMode) (*os.File, error) {
-	if o.tempDir == "" {
-		panic("uninitialized")
-	}
-	temp_file, err := ioutil.TempFile(o.tempDir, "out_")
+func (o *bufferedFileSystem) InputFile(path string) DataInput {
+	return &DataFile{Path: path}
+}
+
+func (o *bufferedFileSystem) OutputFile(path string, perm os.FileMode) DataOutput {
+	temp_file, err := o.temp.TempFile("out_")
 	if err != nil {
-		return nil, err
+		return nil
 	}
-	o.files = append(o.files, fileOutput{Tmp: temp_file.Name(), Dst: path, Perm: perm})
-	return temp_file, err
+	name := temp_file.Name()
+	o.files = append(o.files, fileOutput{Tmp: name, Dst: path, Perm: perm})
+	return &DataFile{Path: name}
 }
 
-func (o *SafeFileOutput) Commit() error {
-	if o.tempDir == "" {
-		panic("uninitialized")
-	}
+func (o *bufferedFileSystem) TempFile() Data {
+	return &DataBuffer{}
+}
+
+func (o *bufferedFileSystem) Commit() error {
 	for _, fout := range o.files {
 		if !fileHaveSameContent(fout.Tmp, fout.Dst) {
 			err := moveFile(fout.Tmp, fout.Dst)
@@ -97,18 +99,6 @@ func (o *SafeFileOutput) Commit() error {
 	return nil
 }
 
-func (o *SafeFileOutput) Cleanup() (err error) {
-	if o.tempDir != "" {
-		err = os.RemoveAll(o.tempDir)
-	}
-	o.tempDir = ""
-	return
-}
-
-func MakeSafeFileOutput() (*SafeFileOutput, error) {
-	temp_dir, err := ioutil.TempDir("", "compiler_outputs_")
-	if err != nil {
-		return nil, err
-	}
-	return &SafeFileOutput{tempDir: temp_dir}, nil
+func MakeBufferedFileSystem(temp *TempDir) BufferedFileSystem {
+	return &bufferedFileSystem{temp: temp}
 }
