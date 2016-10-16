@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"io"
 	"os"
+	"path/filepath"
 )
 
 func hashFile(path string) ([]byte, error) {
@@ -49,6 +50,11 @@ func fileHaveSameContent(path1 string, path2 string) bool {
 }
 
 func moveFile(src string, dst string) error {
+	dir := filepath.Dir(dst)
+	err := os.MkdirAll(dir, 0755)
+	if err != nil {
+		return err
+	}
 	// TODO copy and remove src if rename fails.
 	return os.Rename(src, dst)
 }
@@ -87,7 +93,7 @@ func (o *bufferedFileSystem) Commit() error {
 		if !fileHaveSameContent(fout.Tmp, fout.Dst) {
 			err := moveFile(fout.Tmp, fout.Dst)
 			if err != nil {
-				return nil
+				return err
 			}
 		}
 		err := os.Chmod(fout.Dst, fout.Perm)
