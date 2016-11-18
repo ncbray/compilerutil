@@ -34,10 +34,10 @@ func WriteSVG(out io.Writer) {
 
 	xout.StandardDeclaration()
 	xout.Begin("svg", []writer.Attr{
-		{"width", "500"},
-		{"height", "500"},
-		{"xmlns", "http://www.w3.org/2000/svg"},
-		{"xmlns:xlink", "http://www.w3.org/1999/xlink"},
+		{Name: "width", Value: "500"},
+		{Name: "height", Value: "500"},
+		{Name: "xmlns", Value: "http://www.w3.org/2000/svg"},
+		{Name: "xmlns:xlink", Value: "http://www.w3.org/1999/xlink"},
 	}, true)
 
 	xout.Begin("title", nil, false)
@@ -45,7 +45,7 @@ func WriteSVG(out io.Writer) {
 	xout.End()
 	xout.EndOfLine()
 
-	xout.Begin("style", []writer.Attr{{"type", "text/css"}}, false)
+	xout.Begin("style", []writer.Attr{{Name: "type", Value: "text/css"}}, false)
 	style := xout.BeginTabbedCData()
 	style.WriteLine(".basic_block {")
 	style.Indent()
@@ -77,17 +77,17 @@ func WriteSVG(out io.Writer) {
 	xout.Begin("defs", []writer.Attr{}, true)
 
 	xout.Begin("marker", []writer.Attr{
-		{"id", "arrow"},
-		{"markerWidth", "10"},
-		{"markerHeight", "10"},
-		{"refX", "8"},
-		{"refY", "3"},
-		{"orient", "auto"},
-		{"markerUnits", "strokeWidth"},
+		{Name: "id", Value: "arrow"},
+		{Name: "markerWidth", Value: "10"},
+		{Name: "markerHeight", Value: "10"},
+		{Name: "refX", Value: "8"},
+		{Name: "refY", Value: "3"},
+		{Name: "orient", Value: "auto"},
+		{Name: "markerUnits", Value: "strokeWidth"},
 	}, true)
 	xout.Element("path", []writer.Attr{
-		{"d", "M0,0 L0,6 L9,3 z"},
-		{"fill", "#ff0000"},
+		{Name: "d", Value: "M0,0 L0,6 L9,3 z"},
+		{Name: "fill", Value: "#ff0000"},
 	})
 	xout.End()
 
@@ -98,20 +98,20 @@ func WriteSVG(out io.Writer) {
 
 	for _, node := range nodes {
 		xout.Element("rect", []writer.Attr{
-			{"x", fmt.Sprintf("%d", node.X)},
-			{"y", fmt.Sprintf("%d", node.Y)},
-			{"width", fmt.Sprintf("%d", node.W)},
-			{"height", fmt.Sprintf("%d", node.H)},
-			{"class", "basic_block"},
+			{Name: "x", Value: fmt.Sprintf("%d", node.X)},
+			{Name: "y", Value: fmt.Sprintf("%d", node.Y)},
+			{Name: "width", Value: fmt.Sprintf("%d", node.W)},
+			{Name: "height", Value: fmt.Sprintf("%d", node.H)},
+			{Name: "class", Value: "basic_block"},
 		})
 		x := node.X + node.W/2
 		y := node.Y + line_spacing
 		lines := strings.Split(node.Label, "\n")
 		for _, line := range lines {
 			xout.Begin("text", []writer.Attr{
-				{"x", fmt.Sprintf("%d", x)},
-				{"y", fmt.Sprintf("%d", y)},
-				{"class", "basic_text"},
+				{Name: "x", Value: fmt.Sprintf("%d", x)},
+				{Name: "y", Value: fmt.Sprintf("%d", y)},
+				{Name: "class", Value: "basic_text"},
 			}, false)
 			xout.WriteString(line)
 			xout.End()
@@ -121,16 +121,16 @@ func WriteSVG(out io.Writer) {
 	}
 
 	xout.Element("polyline", []writer.Attr{
-		{"points", "60,60 200,60"},
-		{"class", "basic_arrow"},
+		{Name: "points", Value: "60,60 200,60"},
+		{Name: "class", Value: "basic_arrow"},
 	})
 	xout.Element("polyline", []writer.Attr{
-		{"points", "60,60 200,200"},
-		{"class", "basic_arrow"},
+		{Name: "points", Value: "60,60 200,200"},
+		{Name: "class", Value: "basic_arrow"},
 	})
 	xout.Element("polyline", []writer.Attr{
-		{"points", "60,60 60,200"},
-		{"class", "basic_arrow"},
+		{Name: "points", Value: "60,60 60,200"},
+		{Name: "class", Value: "basic_arrow"},
 	})
 
 	xout.End()
