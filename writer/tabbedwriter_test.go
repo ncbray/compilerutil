@@ -2,8 +2,9 @@ package writer
 
 import (
 	"bytes"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFlatEmptyLines(t *testing.T) {
@@ -82,3 +83,96 @@ func TestTabIdent2(t *testing.T) {
 	w.Dedent()
 	assert.Equal(t, "\t\tx\n", b.String())
 }
+
+func TestEmptyChunk(t *testing.T) {
+	var b bytes.Buffer
+	w := MakeTabbedWriter("\t", &b)
+	w.Indent()
+	w.WriteChunk("")
+	w.Dedent()
+	assert.Equal(t, "", b.String())
+}
+
+func TestSimpleChunk(t *testing.T) {
+	var b bytes.Buffer
+	w := MakeTabbedWriter("\t", &b)
+	w.Indent()
+	w.WriteChunk("foo")
+	w.Dedent()
+	assert.Equal(t, "\tfoo\n", b.String())
+}
+
+func TestTrimChunk(t *testing.T) {
+	var b bytes.Buffer
+	w := MakeTabbedWriter("\t", &b)
+	w.Indent()
+	w.WriteChunk("\n\nfoo\n\n")
+	w.Dedent()
+	assert.Equal(t, "\tfoo\n", b.String())
+}
+
+func TestRetabChunk(t *testing.T) {
+	var b bytes.Buffer
+	w := MakeTabbedWriter("\t", &b)
+	w.Indent()
+	w.WriteChunk("  foo")
+	w.Dedent()
+	assert.Equal(t, "\tfoo\n", b.String())
+}
+
+func TestTwoChunk(t *testing.T) {
+	var b bytes.Buffer
+	w := MakeTabbedWriter("\t", &b)
+	w.Indent()
+	w.WriteChunk("foo\nbar")
+	w.Dedent()
+	assert.Equal(t, "\tfoo\n\tbar\n", b.String())
+}
+
+func TestSplitChunk(t *testing.T) {
+	var b bytes.Buffer
+	w := MakeTabbedWriter("\t", &b)
+	w.Indent()
+	w.WriteChunk("  foo\n\n  bar")
+	w.Dedent()
+	assert.Equal(t, "\tfoo\n\n\tbar\n", b.String())
+}
+
+func TestIndentDedentChunk(t *testing.T) {
+	var b bytes.Buffer
+	w := MakeTabbedWriter("\t", &b)
+	w.Indent()
+	w.WriteChunk("  foo\n    bar\n  baz")
+	w.Dedent()
+	assert.Equal(t, "\tfoo\n\t\tbar\n\tbaz\n", b.String())
+}
+
+func TestIndentDedentTabsChunk(t *testing.T) {
+	var b bytes.Buffer
+	w := MakeTabbedWriter("\t", &b)
+	w.Indent()
+	w.WriteChunk("\tfoo\n\t\tbar\n\tbaz")
+	w.Dedent()
+	assert.Equal(t, "\tfoo\n\t\tbar\n\tbaz\n", b.String())
+}
+
+func TestIndentIndentChunk(t *testing.T) {
+	var b bytes.Buffer
+	w := MakeTabbedWriter("\t", &b)
+	w.Indent()
+	w.WriteChunk("  foo\n    bar\n  baz")
+	w.Dedent()
+	assert.Equal(t, "\tfoo\n\t\tbar\n\tbaz\n", b.String())
+}
+
+/*
+func TestIndentResetChunk(t *testing.T) {
+	var b bytes.Buffer
+	w := MakeTabbedWriter("\t", &b)
+	w.Indent()
+	w.WriteChunk("  foo\n    bar")
+	w.WriteLine("baz")
+	w.Dedent()
+	assert.Equal(t, "\tfoo\n\t\tbar\n\tbaz\n", b.String())
+}
+*/
